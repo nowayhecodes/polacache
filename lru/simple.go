@@ -87,6 +87,17 @@ func (lru *LRU) Contains(key interface{}) (ok bool) {
 	return ok
 }
 
+// Peek returns a key's value from the cache (or undefined)
+// without update the "recenty"-ness of the given key
+func (lru *LRU) Peek(key interface{}) (value interface{}, ok bool) {
+	var item *list.Element
+	if item, ok = lru.items[key]; ok {
+		return item.Value.(*entry).value, true
+	}
+
+	return nil, ok
+}
+
 func (lru *LRU) removeOldest() {
 	item := lru.evictList.Back()
 	if item != nil {
