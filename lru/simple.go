@@ -81,6 +81,12 @@ func (lru *LRU) Get(key interface{}) (value interface{}, ok bool) {
 	return
 }
 
+// Checks if a key is in the cache
+func (lru *LRU) Contains(key interface{}) (ok bool) {
+	_, ok = lru.items[key]
+	return ok
+}
+
 func (lru *LRU) removeOldest() {
 	item := lru.evictList.Back()
 	if item != nil {
