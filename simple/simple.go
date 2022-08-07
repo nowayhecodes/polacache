@@ -98,6 +98,15 @@ func (lru *LRU) Peek(key interface{}) (value interface{}, ok bool) {
 	return nil, ok
 }
 
+// Removes the key from the cache
+func (lru *LRU) Remove(key interface{}) (present bool) {
+	if item, ok := lru.items[key]; ok {
+		lru.removeElement(item)
+		return true
+	}
+	return false
+}
+
 // Removes the oldest item from the cache
 func (lru *LRU) RemoveOldest() (key interface{}, value interface{}, ok bool) {
 	item := lru.evictList.Back()
