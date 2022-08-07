@@ -131,6 +131,11 @@ func (lru *LRU) Keys() []interface{} {
 	return keys
 }
 
+// This really doesn't need explanation
+func (lru *LRU) Len() int {
+	return lru.evictList.Len()
+}
+
 func (lru *LRU) removeOldest() {
 	item := lru.evictList.Back()
 	if item != nil {
