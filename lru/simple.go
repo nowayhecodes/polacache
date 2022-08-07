@@ -109,6 +109,7 @@ func (lru *LRU) RemoveOldest() (key interface{}, value interface{}, ok bool) {
 	return nil, nil, false
 }
 
+// Returns the oldest entry
 func (lru *LRU) GetOldest() (key interface{}, value interface{}, ok bool) {
 	item := lru.evictList.Back()
 	if item != nil {
@@ -116,6 +117,18 @@ func (lru *LRU) GetOldest() (key interface{}, value interface{}, ok bool) {
 		return kv.key, kv.value, true
 	}
 	return nil, nil, false
+}
+
+// Returns a slice of the keys in cache (oldest -> newest)
+func (lru *LRU) Keys() []interface{} {
+	keys := make([]interface{}, len(lru.items))
+	i := 0
+
+	for item := lru.evictList.Back(); item != nil; item = item.Prev() {
+		keys[i] = item.Value.(*entry).key
+		i++
+	}
+	return keys
 }
 
 func (lru *LRU) removeOldest() {
