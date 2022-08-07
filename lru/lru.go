@@ -12,11 +12,14 @@ type Cache struct {
 	lock sync.Mutex
 }
 
+// Creates a LRU cache of a given size
+// (internally returns a NewWithEviction, with a nil eviction callback)
 func New(size int) (*Cache, error) {
 	return NewWithEviction(size, nil)
 }
 
-func NewWithEviction(size int, onEvicted func(key interface{}, value interface{})) (*Cache, error) {
+// Creates a LRU cache of a given size with a given eviction callback
+func NewWithEviction(size int, onEvicted func(key, value interface{})) (*Cache, error) {
 	lru, err := simple.NewLRU(size, simple.EvictCallback(onEvicted))
 
 	if err != nil {
@@ -28,4 +31,20 @@ func NewWithEviction(size int, onEvicted func(key interface{}, value interface{}
 	}
 
 	return c, nil
+}
+
+// Purges the cache
+func (c *Cache) Purge() {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+
+	c.lru.Purge()
+}
+
+// Adds an entry to the cache, returning the if an eviction occured
+func (c *Cache) Add(key, value interface{}) (evicted bool) {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+
+	return c.lru.Add(key, value)
 }
