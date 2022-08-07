@@ -109,6 +109,15 @@ func (lru *LRU) RemoveOldest() (key interface{}, value interface{}, ok bool) {
 	return nil, nil, false
 }
 
+func (lru *LRU) GetOldest() (key interface{}, value interface{}, ok bool) {
+	item := lru.evictList.Back()
+	if item != nil {
+		kv := item.Value.(*entry)
+		return kv.key, kv.value, true
+	}
+	return nil, nil, false
+}
+
 func (lru *LRU) removeOldest() {
 	item := lru.evictList.Back()
 	if item != nil {
