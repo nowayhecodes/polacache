@@ -48,3 +48,11 @@ func (c *Cache) Add(key, value interface{}) (evicted bool) {
 
 	return c.lru.Add(key, value)
 }
+
+// Gets a key's value from cache
+func (c *Cache) Get(key interface{}) (value interface{}, ok bool) {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+
+	return c.lru.Get(key)
+}
