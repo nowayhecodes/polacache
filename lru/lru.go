@@ -56,3 +56,11 @@ func (c *Cache) Get(key interface{}) (value interface{}, ok bool) {
 
 	return c.lru.Get(key)
 }
+
+// Checks if a given is in the cache
+func (c *Cache) Contains(key interface{}) bool {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+
+	return c.lru.Contains(key)
+}
