@@ -64,3 +64,12 @@ func (c *Cache) Contains(key interface{}) bool {
 
 	return c.lru.Contains(key)
 }
+
+// Returns the key value without updating
+// the recentness of the key
+func (c *Cache) Peek(key interface{}) (value interface{}, ok bool) {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+
+	return c.lru.Peek(key)
+}
