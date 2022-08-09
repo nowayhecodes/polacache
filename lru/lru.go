@@ -73,3 +73,18 @@ func (c *Cache) Peek(key interface{}) (value interface{}, ok bool) {
 
 	return c.lru.Peek(key)
 }
+
+func (c *Cache) Remove(key interface{}) bool {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+
+	return c.lru.Remove(key)
+}
+
+func (c *Cache) RemoveOldest() (interface{}, interface{}, bool) {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+
+	key, value, ok := c.lru.RemoveOldest()
+	return key, value, ok
+}
