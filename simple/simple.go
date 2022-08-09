@@ -140,7 +140,7 @@ func (lru *LRU) Keys() []interface{} {
 	return keys
 }
 
-// This really doesn't need explanation
+// This really doesn't need an explanation, right?
 func (lru *LRU) Len() int {
 	return lru.evictList.Len()
 }

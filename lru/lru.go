@@ -9,7 +9,7 @@ import (
 
 type Cache struct {
 	lru  cache.LRUCache
-	lock sync.Mutex
+	lock sync.RWMutex
 }
 
 // Creates a LRU cache of a given size
@@ -98,4 +98,20 @@ func (c *Cache) GetOldest() (interface{}, interface{}, bool) {
 
 	key, value, ok := c.lru.GetOldest()
 	return key, value, ok
+}
+
+//Returns a slice of the keys in the cache, from oldest to newest
+func (c *Cache) Keys() []interface{} {
+	c.lock.RLock()
+	defer c.lock.RUnlock()
+
+	return c.lru.Keys()
+}
+
+// This really doesn't need an explanation, right?
+func (c *Cache) Len() int {
+	c.lock.RLock()
+	defer c.lock.RUnlock()
+
+	return c.lru.Len()
 }
