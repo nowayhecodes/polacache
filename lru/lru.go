@@ -90,3 +90,12 @@ func (c *Cache) RemoveOldest() (interface{}, interface{}, bool) {
 	key, value, ok := c.lru.RemoveOldest()
 	return key, value, ok
 }
+
+// Gets the oldest item in the cache
+func (c *Cache) GetOldest() (interface{}, interface{}, bool) {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+
+	key, value, ok := c.lru.GetOldest()
+	return key, value, ok
+}
