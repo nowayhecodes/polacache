@@ -74,6 +74,7 @@ func (c *Cache) Peek(key interface{}) (value interface{}, ok bool) {
 	return c.lru.Peek(key)
 }
 
+// Reaps of the provided key from the cache
 func (c *Cache) Remove(key interface{}) bool {
 	c.lock.Lock()
 	defer c.lock.Unlock()
@@ -81,6 +82,7 @@ func (c *Cache) Remove(key interface{}) bool {
 	return c.lru.Remove(key)
 }
 
+// Reaps of the oldest item from the cache
 func (c *Cache) RemoveOldest() (interface{}, interface{}, bool) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
