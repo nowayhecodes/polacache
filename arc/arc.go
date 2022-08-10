@@ -89,3 +89,101 @@ func (arc *ARCCache) Get(key interface{}) (value interface{}, ok bool) {
 
 	return nil, false
 }
+
+// Adds a value to the cache
+func (arc *ARCCache) Add(key, value interface{}) bool {
+	arc.lock.Lock()
+	defer arc.lock.Unlock()
+
+	delta := 1
+
+	if arc.recently.Contains(key) {
+		if !arc.recently.Remove(key) {
+			return false
+		}
+		return arc.frequently.Add(key, value)
+	}
+
+	if arc.frequently.Contains(key) {
+		return arc.frequently.Add(key, value)
+	}
+
+	if arc.recentlyEviction.Contains(key) {
+		recentlyEvictionLen := arc.recentlyEviction.Len()
+		frequentlyEvictionLen := arc.frequentlyEviction.Len()
+
+		if frequentlyEvictionLen > recentlyEvictionLen {
+			delta = frequentlyEvictionLen / recentlyEvictionLen
+		}
+
+		if arc.pref+delta >= arc.size {
+			arc.pref = arc.size
+		} else {
+			arc.pref += delta
+		}
+
+		if arc.recently.Len()+arc.frequently.Len() >= arc.size {
+			arc.replace(false)
+		}
+
+		arc.recentlyEviction.Remove(key)
+
+		return arc.frequently.Add(key, value)
+	}
+
+	if arc.frequentlyEviction.Contains(key) {
+		recentEvictLen := arc.recently.Len()
+		freqEvictLen := arc.frequently.Len()
+
+		if recentEvictLen > freqEvictLen {
+			delta = recentEvictLen / freqEvictLen
+		}
+
+		if delta >= arc.pref {
+			arc.pref = 0
+		} else {
+			arc.pref -= delta
+		}
+
+		if arc.recently.Len()+arc.frequently.Len() >= arc.size {
+			arc.replace(true)
+		}
+
+		arc.frequentlyEviction.Remove(key)
+
+		return arc.frequently.Add(key, value)
+	}
+
+	if arc.recently.Len()+arc.frequently.Len() >= arc.size {
+		arc.replace(false)
+	}
+
+	if arc.recentlyEviction.Len() > arc.size-arc.pref {
+		arc.recentlyEviction.RemoveOldest()
+	}
+
+	if arc.frequentlyEviction.Len() > arc.pref {
+		arc.frequentlyEviction.RemoveOldest()
+	}
+
+	return arc.recently.Add(key, value)
+}
+
+// Adaptively evict from either recently or frequently
+// based on current value of pref
+func (arc *ARCCache) replace(freqEvictContainsKey bool) {
+	recentLen := arc.recently.Len()
+
+	if recentLen > 0 && (recentLen > arc.pref || (recentLen == arc.pref && freqEvictContainsKey)) {
+		k, _, ok := arc.recently.RemoveOldest()
+
+		if ok {
+			arc.recently.Add(k, nil)
+		}
+	} else {
+		k, _, ok := arc.frequently.RemoveOldest()
+		if ok {
+			arc.frequentlyEviction.Add(k, nil)
+		}
+	}
+}
