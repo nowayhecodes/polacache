@@ -105,3 +105,21 @@ func (twoq *TwoQueueCache) Add(key, value interface{}) bool {
 	twoq.ensureSpace(false)
 	return twoq.recent.Add(key, value)
 }
+
+func (twoq *TwoQueueCache) ensureSpace(recentEvict bool) {
+	recentLen := twoq.recent.Len()
+	frequentLen := twoq.frequent.Len()
+
+	if recentLen+frequentLen < twoq.size {
+		return
+	}
+
+	if recentLen > 0 &&
+		(recentLen > twoq.recentSize || (recentLen == twoq.recentSize && !recentEvict)) {
+		key, _, _ := twoq.recent.RemoveOldest()
+		twoq.recentEvict.Add(key, nil)
+		return
+	}
+
+	twoq.frequent.RemoveOldest()
+}
