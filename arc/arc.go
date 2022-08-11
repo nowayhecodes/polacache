@@ -218,6 +218,13 @@ func (arc *ARCCache) Purge() {
 	arc.frequentlyEviction.Purge()
 }
 
+// Checks if the cache contains the given key
+func (arc *ARCCache) Contains(key interface{}) bool {
+	arc.lock.RLock()
+	defer arc.lock.RUnlock()
+	return arc.recently.Contains(key) || arc.frequently.Contains(key)
+}
+
 // Adaptively evict from either recently or frequently
 // based on current value of pref
 func (arc *ARCCache) replace(freqEvictContainsKey bool) {
