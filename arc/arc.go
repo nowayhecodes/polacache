@@ -176,6 +176,17 @@ func (arc *ARCCache) Len() int {
 	return arc.recently.Len() + arc.frequently.Len()
 }
 
+// Returns the cached keys
+func (arc *ARCCache) Keys() []interface{} {
+	arc.lock.RLock()
+	defer arc.lock.RUnlock()
+
+	k1 := arc.recently.Keys()
+	k2 := arc.frequently.Keys()
+
+	return append(k1, k2...)
+}
+
 // Adaptively evict from either recently or frequently
 // based on current value of pref
 func (arc *ARCCache) replace(freqEvictContainsKey bool) {
