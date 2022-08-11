@@ -131,6 +131,7 @@ func (twoq *TwoQueueCache) Len() int {
 	return twoq.recent.Len() + twoq.frequent.Len()
 }
 
+// Returns a slice of the keys in the cache.
 func (twoq *TwoQueueCache) Keys() []interface{} {
 	twoq.lock.RLock()
 	defer twoq.lock.RUnlock()
@@ -138,6 +139,22 @@ func (twoq *TwoQueueCache) Keys() []interface{} {
 	k1 := twoq.frequent.Keys()
 	k2 := twoq.recent.Keys()
 	return append(k1, k2...)
+}
+
+// Removes the given key from the cache
+func (twoq *TwoQueueCache) Remove(key interface{}) bool {
+	twoq.lock.Lock()
+	defer twoq.lock.Unlock()
+
+	if twoq.frequent.Remove(key) {
+		return true
+	}
+
+	if twoq.recent.Remove(key) {
+		return true
+	}
+
+	return twoq.recentEvict.Remove(key)
 }
 
 func (twoq *TwoQueueCache) ensureSpace(recentEvict bool) {
