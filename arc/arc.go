@@ -225,6 +225,17 @@ func (arc *ARCCache) Contains(key interface{}) bool {
 	return arc.recently.Contains(key) || arc.frequently.Contains(key)
 }
 
+// Inspects key's value
+func (arc *ARCCache) Peek(key interface{}) (value interface{}, ok bool) {
+	arc.lock.RLock()
+	defer arc.lock.RUnlock()
+
+	if val, ok := arc.recently.Peek(key); ok {
+		return val, ok
+	}
+	return arc.frequently.Peek(key)
+}
+
 // Adaptively evict from either recently or frequently
 // based on current value of pref
 func (arc *ARCCache) replace(freqEvictContainsKey bool) {
