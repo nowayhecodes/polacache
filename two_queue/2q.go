@@ -131,6 +131,15 @@ func (twoq *TwoQueueCache) Len() int {
 	return twoq.recent.Len() + twoq.frequent.Len()
 }
 
+func (twoq *TwoQueueCache) Keys() []interface{} {
+	twoq.lock.RLock()
+	defer twoq.lock.RUnlock()
+
+	k1 := twoq.frequent.Keys()
+	k2 := twoq.recent.Keys()
+	return append(k1, k2...)
+}
+
 func (twoq *TwoQueueCache) ensureSpace(recentEvict bool) {
 	recentLen := twoq.recent.Len()
 	frequentLen := twoq.frequent.Len()
