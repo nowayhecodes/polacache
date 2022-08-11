@@ -81,3 +81,27 @@ func New2QWithParams(size int, recentRatio float64, ghostRation float64) (*TwoQu
 
 	return twoQ, nil
 }
+
+// Adds a value to the cache
+func (twoq *TwoQueueCache) Add(key, value interface{}) bool {
+	twoq.lock.Lock()
+	defer twoq.lock.Unlock()
+
+	if twoq.frequent.Contains(key) {
+		return twoq.frequent.Add(key, value)
+	}
+
+	if twoq.recent.Contains(key) {
+		twoq.recent.Remove(key)
+		return twoq.frequent.Add(key, value)
+	}
+
+	if twoq.recentEvict.Contains(key) {
+		twoq.ensureSpace(true)
+		twoq.recentEvict.Remove(key)
+		return twoq.frequent.Add(key, value)
+	}
+
+	twoq.ensureSpace(false)
+	return twoq.recent.Add(key, value)
+}
