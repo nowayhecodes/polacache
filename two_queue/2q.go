@@ -1,5 +1,13 @@
 package twoqueue
 
+import (
+	"fmt"
+	"sync"
+
+	"github.com/nowayhecodes/polacache"
+	lru "github.com/nowayhecodes/polacache/simple"
+)
+
 // Default2QRecentRatio is the ratio of the 2Q cache dedicated
 // to recently added entries that have only been accessed once.
 const DEFAULT_2Q_RECENT_RATIO = 0.25
@@ -18,6 +26,58 @@ const DEFAULT_2Q_GHOST_ENTRIES = 0.50
 // head. The ARCCache is similar, but does not require setting any
 // parameters.
 type TwoQueueCache struct {
-	size       int
-	recentSize int
+	size        int
+	recentSize  int
+	recent      polacache.LRUCache
+	frequent    polacache.LRUCache
+	recentEvict polacache.LRUCache
+	lock        sync.RWMutex
+}
+
+// Creates a 2Q cache of the given size with some default params
+func New2Q(size int) (*TwoQueueCache, error) {
+	return New2QWithParams(size, DEFAULT_2Q_RECENT_RATIO, DEFAULT_2Q_GHOST_ENTRIES)
+}
+
+// Creates a 2Q cache with the provided params
+func New2QWithParams(size int, recentRatio float64, ghostRation float64) (*TwoQueueCache, error) {
+	if size <= 0 {
+		return nil, fmt.Errorf("invalid size")
+	}
+
+	if recentRatio < 0.0 || recentRatio > 1.0 {
+		return nil, fmt.Errorf("invalid recent ratio")
+	}
+
+	if ghostRation < 0.0 || ghostRation > 1.0 {
+		return nil, fmt.Errorf("invalid ghost ratio")
+	}
+
+	recentSize := int(float64(size) * recentRatio)
+	evictSize := int(float64(size) * ghostRation)
+
+	recent, err := lru.NewLRU(size, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	frequent, err := lru.NewLRU(size, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	recentEvict, err := lru.NewLRU(evictSize, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	twoQ := &TwoQueueCache{
+		size:        size,
+		recentSize:  recentSize,
+		recent:      recent,
+		frequent:    frequent,
+		recentEvict: recentEvict,
+	}
+
+	return twoQ, nil
 }
