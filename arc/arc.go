@@ -187,6 +187,26 @@ func (arc *ARCCache) Keys() []interface{} {
 	return append(k1, k2...)
 }
 
+// Removes a key from the cache
+func (arc *ARCCache) Remove(key interface{}) bool {
+	arc.lock.Lock()
+	defer arc.lock.Unlock()
+
+	if arc.recently.Remove(key) {
+		return true
+	}
+
+	if arc.frequently.Remove(key) {
+		return true
+	}
+
+	if arc.recentlyEviction.Remove(key) {
+		return true
+	}
+
+	return arc.frequentlyEviction.Remove(key)
+}
+
 // Adaptively evict from either recently or frequently
 // based on current value of pref
 func (arc *ARCCache) replace(freqEvictContainsKey bool) {
