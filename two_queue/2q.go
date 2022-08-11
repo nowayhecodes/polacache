@@ -124,6 +124,13 @@ func (twoq *TwoQueueCache) Get(key interface{}) (value interface{}, ok bool) {
 	return nil, false
 }
 
+// This really doesn't need an explanation, right?
+func (twoq *TwoQueueCache) Len() int {
+	twoq.lock.RLock()
+	defer twoq.lock.RUnlock()
+	return twoq.recent.Len() + twoq.frequent.Len()
+}
+
 func (twoq *TwoQueueCache) ensureSpace(recentEvict bool) {
 	recentLen := twoq.recent.Len()
 	frequentLen := twoq.frequent.Len()
