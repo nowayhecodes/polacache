@@ -106,6 +106,24 @@ func (twoq *TwoQueueCache) Add(key, value interface{}) bool {
 	return twoq.recent.Add(key, value)
 }
 
+// Gets a key's value from the cache
+func (twoq *TwoQueueCache) Get(key interface{}) (value interface{}, ok bool) {
+	twoq.lock.Lock()
+	defer twoq.lock.Unlock()
+
+	if val, ok := twoq.frequent.Get(key); ok {
+		return val, ok
+	}
+
+	if val, ok := twoq.recent.Peek(key); ok {
+		twoq.recent.Remove(key)
+		twoq.frequent.Add(key, val)
+		return val, ok
+	}
+
+	return nil, false
+}
+
 func (twoq *TwoQueueCache) ensureSpace(recentEvict bool) {
 	recentLen := twoq.recent.Len()
 	frequentLen := twoq.frequent.Len()
