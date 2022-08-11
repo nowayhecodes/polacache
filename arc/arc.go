@@ -207,6 +207,17 @@ func (arc *ARCCache) Remove(key interface{}) bool {
 	return arc.frequentlyEviction.Remove(key)
 }
 
+// Purges the cache
+func (arc *ARCCache) Purge() {
+	arc.lock.Lock()
+	defer arc.lock.Unlock()
+
+	arc.recently.Purge()
+	arc.recentlyEviction.Purge()
+	arc.frequently.Purge()
+	arc.frequentlyEviction.Purge()
+}
+
 // Adaptively evict from either recently or frequently
 // based on current value of pref
 func (arc *ARCCache) replace(freqEvictContainsKey bool) {
