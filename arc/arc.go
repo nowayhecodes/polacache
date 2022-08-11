@@ -169,6 +169,13 @@ func (arc *ARCCache) Add(key, value interface{}) bool {
 	return arc.recently.Add(key, value)
 }
 
+// This really doesn't need an explanation, right?
+func (arc *ARCCache) Len() int {
+	arc.lock.RLock()
+	defer arc.lock.RUnlock()
+	return arc.recently.Len() + arc.frequently.Len()
+}
+
 // Adaptively evict from either recently or frequently
 // based on current value of pref
 func (arc *ARCCache) replace(freqEvictContainsKey bool) {
