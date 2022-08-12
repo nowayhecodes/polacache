@@ -2,6 +2,8 @@ package simple
 
 import (
 	"container/list"
+	"encoding/binary"
+	"fmt"
 )
 
 type EvictCallback func(key, value interface{})
@@ -40,5 +42,27 @@ func NewWithGDSF(size float64, onEvict EvictCallback) *LFU {
 		onEvict:     onEvict,
 		age:         0,
 		policy:      gdsfPolicy,
+	}
+}
+
+func lfuDynamicAgingPolicy(element *item, cacheAge float64) float64 {
+	return element.hits + cacheAge
+}
+
+func gdsfPolicy(element *item, cacheAge float64) float64 {
+	return (element.hits / element.size) + cacheAge
+}
+
+func lfuPolicy(element *item, cacheAge float64) float64 {
+	return element.hits
+}
+
+func calculeBytes(value interface{}) float64 {
+	if b, ok := value.([]byte); ok {
+		return float64(len(b))
+	} else if b := binary.Size(value); b != -1 {
+		return float64(b)
+	} else {
+		return float64(len([]byte(fmt.Sprintf("%v", value))))
 	}
 }
