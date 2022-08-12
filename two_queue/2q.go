@@ -174,6 +174,27 @@ func (twoq *TwoQueueCache) Contains(key interface{}) bool {
 	return twoq.frequent.Contains(key) || twoq.recent.Contains(key)
 }
 
+// Inspects a key's value in the cache
+func (twoq *TwoQueueCache) Peek(key interface{}) (value interface{}, ok bool) {
+	twoq.lock.RLock()
+	defer twoq.lock.RUnlock()
+
+	if val, ok := twoq.frequent.Peek(key); ok {
+		return val, ok
+	}
+	return twoq.recent.Peek(key)
+}
+
+// Removes the oldest item from the cache.
+func (c *TwoQueueCache) RemoveOldest() (interface{}, interface{}, bool) {
+	return nil, nil, false
+}
+
+// Gets the oldest item from the cache.
+func (c *TwoQueueCache) GetOldest() (interface{}, interface{}, bool) {
+	return nil, nil, false
+}
+
 func (twoq *TwoQueueCache) ensureSpace(recentEvict bool) {
 	recentLen := twoq.recent.Len()
 	frequentLen := twoq.frequent.Len()
