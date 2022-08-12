@@ -115,3 +115,56 @@ func (lfu *LFU) evict() bool {
 	}
 	return false
 }
+
+func (lfu *LFU) increment(entry *item) {
+	old := entry.frequentlyNode
+	cursor := entry.frequentlyNode
+
+	var next *list.Element
+
+	if cursor == nil {
+		next = lfu.frequently.Front()
+	} else {
+		next = cursor.Next()
+	}
+
+	entry.hits++
+	entry.priorityKey = lfu.policy(entry, lfu.age)
+
+	for {
+		if next == nil || next.Value.(*listEntry).priorityKey > entry.priorityKey {
+			li := new(listEntry)
+			li.priorityKey = entry.priorityKey
+			li.entries = make(map[*item]byte)
+
+			if cursor != nil {
+				next = lfu.frequently.InsertAfter(li, cursor)
+
+			} else {
+				next = lfu.frequently.PushFront(li)
+			}
+			break
+		} else if next.Value.(*listEntry).priorityKey == entry.priorityKey {
+			break
+		} else if entry.priorityKey > next.Value.(*listEntry).priorityKey {
+			cursor = next
+			next = cursor.Next()
+		}
+	}
+
+	entry.frequentlyNode = next
+	next.Value.(*listEntry).entries[entry] = 1
+
+	if old != nil {
+		lfu.removeEntry(old, entry)
+	}
+}
+
+func (lfu *LFU) removeEntry(place *list.Element, entry *item) {
+	entries := place.Value.(*listEntry).entries
+	delete(entries, entry)
+
+	if len(entries) == 0 {
+		lfu.frequently.Remove(place)
+	}
+}
