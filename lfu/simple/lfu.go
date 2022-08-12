@@ -33,6 +33,7 @@ type listEntry struct {
 	priorityKey float64
 }
 
+// Returns a new LFU with Dynamic Aging of the given size in bytes, using the GDSF eviction policy
 func NewWithGDSF(size float64, onEvict EvictCallback) *LFU {
 	return &LFU{
 		size:        size,
@@ -42,6 +43,19 @@ func NewWithGDSF(size float64, onEvict EvictCallback) *LFU {
 		onEvict:     onEvict,
 		age:         0,
 		policy:      gdsfPolicy,
+	}
+}
+
+// Returns a new LFU with Dynamic Aging of the given size in bytes, using LFUDA eviction policy
+func NewWithDA(size float64, onEvict EvictCallback) *LFU {
+	return &LFU{
+		size:        size,
+		currentSize: 0,
+		items:       make(map[interface{}]*item),
+		frequently:  list.New(),
+		onEvict:     onEvict,
+		age:         0,
+		policy:      lfuDynamicAgingPolicy,
 	}
 }
 
