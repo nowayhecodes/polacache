@@ -157,6 +157,7 @@ func (twoq *TwoQueueCache) Remove(key interface{}) bool {
 	return twoq.recentEvict.Remove(key)
 }
 
+// Purges the cache
 func (twoq *TwoQueueCache) Purge() {
 	twoq.lock.Lock()
 	defer twoq.lock.Unlock()
@@ -164,6 +165,13 @@ func (twoq *TwoQueueCache) Purge() {
 	twoq.recent.Purge()
 	twoq.frequent.Purge()
 	twoq.recentEvict.Purge()
+}
+
+// Checks if a given key is in the cache
+func (twoq *TwoQueueCache) Contains(key interface{}) bool {
+	twoq.lock.RLock()
+	defer twoq.lock.RUnlock()
+	return twoq.frequent.Contains(key) || twoq.recent.Contains(key)
 }
 
 func (twoq *TwoQueueCache) ensureSpace(recentEvict bool) {
