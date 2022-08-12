@@ -72,6 +72,14 @@ func NewWithDA(size float64, onEvict EvictCallback) *LFU {
 	}
 }
 
+func (lfu *LFU) Get(key interface{}) (interface{}, bool) {
+	if entry, ok := lfu.items[key]; ok {
+		lfu.increment(entry)
+		return entry.value, true
+	}
+	return nil, false
+}
+
 func lfuDynamicAgingPolicy(element *item, cacheAge float64) float64 {
 	return element.hits + cacheAge
 }
@@ -92,4 +100,18 @@ func calculeBytes(value interface{}) float64 {
 	} else {
 		return float64(len([]byte(fmt.Sprintf("%v", value))))
 	}
+}
+
+func (lfu *LFU) evict() bool {
+	if place := lfu.frequently.Front(); place != nil {
+		for entry := range place.Value.(*listEntry).entries {
+			if lfu.age < entry.priorityKey {
+				lfu.age = entry.priorityKey
+			}
+
+			lfu.Remove(entry.key)
+			return true
+		}
+	}
+	return false
 }
