@@ -157,6 +157,15 @@ func (twoq *TwoQueueCache) Remove(key interface{}) bool {
 	return twoq.recentEvict.Remove(key)
 }
 
+func (twoq *TwoQueueCache) Purge() {
+	twoq.lock.Lock()
+	defer twoq.lock.Unlock()
+
+	twoq.recent.Purge()
+	twoq.frequent.Purge()
+	twoq.recentEvict.Purge()
+}
+
 func (twoq *TwoQueueCache) ensureSpace(recentEvict bool) {
 	recentLen := twoq.recent.Len()
 	frequentLen := twoq.frequent.Len()
