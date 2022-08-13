@@ -167,6 +167,25 @@ func (lfu *LFU) Remove(key interface{}) bool {
 	return false
 }
 
+// Returns a slice of keys ordered by frequency
+func (lfu *LFU) Keys() []interface{} {
+	keys := make([]interface{}, len(lfu.items))
+	i := 0
+
+	for node := lfu.frequently.Back(); node != nil; node = node.Prev() {
+		for entry := range node.Value.(*listEntry).entries {
+			keys[i] = entry.key
+			i++
+		}
+	}
+	return keys
+}
+
+// Returns the cache age factor
+func (lfu *LFU) Age() float64 {
+	return lfu.age
+}
+
 func lfuDynamicAgingPolicy(element *item, cacheAge float64) float64 {
 	return element.hits + cacheAge
 }
