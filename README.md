@@ -7,11 +7,14 @@
 </div>
 
 <div align="center" style="margin-top: -4rem;">
-    <p style="font-size: 1.5rem;">Classic and 2Q LRU cache in Go.</p>    
+    <p style="font-size: 1.5rem;">Some caching algorithms in Go</p>    
 </div>
 
-## What?
+### This package implements some caching algorithms as discribed below:
 
-LRU stands for Least Recently Used and it's caching algorithm that keep tracks of the least recently used item and discards it.
+- LRU (Least Recently Used): Keeps track of the least recently used item in the cache and discards it. The LRU eviction algorithm evicts the page from the buffer which has not been accessed for the longest.
 
-Actually it's part of a group of algorithms, which includes the 2Q cache algorithm.
+- LFU (Least Frequently Used): Does almost the same as LRU, but tracks the least frequently used. This also implements a Dynamic Aging and a GreedyDual-Size with Frequency cache policy.
+
+- 2Q Cache: 2Q addresses the above-illustrated issues by introducing parallel buffers and supporting queues. 2Q algorithm works with two buffers. A primary LRU buffer and a secondary FIFO buffer. Instead of considering just recency as a factor, 2Q also considers access frequency while making the decision to ensure the page that is really warm gets a place in the LRU cache. It admits only hot pages to the main buffer and tests every page for a second reference.
+
