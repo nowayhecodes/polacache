@@ -2,15 +2,17 @@
     <img src="./asset/polacache.png"  width="300" alt="iters" />
 </div>
 
+<br />
 <div align="center">
-    <p style="font-size: 5.5rem;">Polacache</p>    
+    <h1>Polacache</h1>
 </div>
 
 <div align="center" style="margin-top: -4rem;">
-    <p style="font-size: 1.5rem;">Some caching algorithms in Go</p>    
+    <h3>Easily switch your caching algorithm between: LRU, LFU and 2Q</h3>
 </div>
+<br />
 
-### This package implements some caching algorithms as discribed below:
+#### This package implements some caching algorithms as discribed below:
 
 - LRU (Least Recently Used): Keeps track of the least recently used item in the cache and discards it. The LRU eviction algorithm evicts the page from the buffer which has not been accessed for the longest.
 
