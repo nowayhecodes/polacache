@@ -72,6 +72,40 @@ func NewWithDA(size float64, onEvict EvictCallback) *LFU {
 	}
 }
 
+// Adds a value to the cache, returning true if an eviction occurs.
+func (lfu *LFU) Add(key, value interface{}) bool {
+	evicted := false
+	if entry, ok := lfu.items[key]; ok {
+		entry.value = value
+		lfu.increment(entry)
+	} else {
+		calculatedBytes := calculateBytes(value)
+
+		if lfu.size < calculatedBytes {
+			return false
+		}
+
+		for {
+			if lfu.currentSize+calculatedBytes > lfu.size {
+				lfu.evict()
+				evicted = true
+			} else {
+				break
+			}
+		}
+
+		entry := new(item)
+		entry.size = calculatedBytes
+		entry.key = key
+		entry.value = value
+		lfu.items[key] = entry
+		lfu.currentSize += calculatedBytes
+		lfu.increment(entry)
+	}
+	return evicted
+}
+
+// Gets a key's value from the cache
 func (lfu *LFU) Get(key interface{}) (interface{}, bool) {
 	if entry, ok := lfu.items[key]; ok {
 		lfu.increment(entry)
@@ -92,7 +126,7 @@ func lfuPolicy(element *item, cacheAge float64) float64 {
 	return element.hits
 }
 
-func calculeBytes(value interface{}) float64 {
+func calculateBytes(value interface{}) float64 {
 	if b, ok := value.([]byte); ok {
 		return float64(len(b))
 	} else if b := binary.Size(value); b != -1 {
