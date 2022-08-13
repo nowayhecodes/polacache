@@ -114,6 +114,24 @@ func (lfu *LFU) Get(key interface{}) (interface{}, bool) {
 	return nil, false
 }
 
+// Lookup a key's value without increment the hit counter
+func (lfu *LFU) Peek(key interface{}) (interface{}, bool) {
+	if entry, ok := lfu.items[key]; ok {
+		return entry.value, true
+	}
+	return nil, false
+}
+
+// Need explanation?
+func (lfu *LFU) Len() int {
+	return len(lfu.items)
+}
+
+// Returns the size in bytes
+func (lfu *LFU) Size() float64 {
+	return lfu.currentSize
+}
+
 func lfuDynamicAgingPolicy(element *item, cacheAge float64) float64 {
 	return element.hits + cacheAge
 }
