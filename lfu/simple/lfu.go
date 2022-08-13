@@ -132,6 +132,41 @@ func (lfu *LFU) Size() float64 {
 	return lfu.currentSize
 }
 
+// Clears the cache
+func (lfu *LFU) Purge() {
+	for k, v := range lfu.items {
+		if lfu.onEvict != nil {
+			lfu.onEvict(k, v.value)
+		}
+		delete(lfu.items, k)
+	}
+	lfu.age = 0
+	lfu.currentSize = 0
+	lfu.frequently.Init()
+}
+
+// Checks if a key is in the cache
+func (lfu *LFU) Contains(key interface{}) (ok bool) {
+	_, ok = lfu.items[key]
+	return ok
+}
+
+// Removes the given key from the cache
+func (lfu *LFU) Remove(key interface{}) bool {
+	if item, ok := lfu.items[key]; ok {
+		if lfu.onEvict != nil {
+			lfu.onEvict(item.key, item.value)
+		}
+		delete(lfu.items, key)
+
+		lfu.removeEntry(item.frequentlyNode, item)
+		lfu.currentSize -= item.size
+
+		return true
+	}
+	return false
+}
+
 func lfuDynamicAgingPolicy(element *item, cacheAge float64) float64 {
 	return element.hits + cacheAge
 }
