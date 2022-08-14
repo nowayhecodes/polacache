@@ -50,7 +50,7 @@ func (c *cache) Set(i item, expiresAt int64) {
 	}
 }
 
-func (c *cache) Get(key interface{}) (interface{}, error) {
+func (c *cache) Get(key string) (interface{}, error) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 
@@ -62,7 +62,7 @@ func (c *cache) Get(key interface{}) (interface{}, error) {
 	return cached.item.value, nil
 }
 
-func (c *cache) Delete(key interface{}) {
+func (c *cache) Delete(key string) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 
