@@ -8,15 +8,43 @@
 </div>
 
 <div align="center" style="margin-top: -4rem;">
-    <h3>Easily switch your caching algorithm between: LRU, LFU and 2Q</h3>
+    <h3>A deadly simple and thread-safe map cache.</h3>
 </div>
 <br />
 
-#### This package implements some caching algorithms as discribed below:
+#### What?
 
-- LRU (Least Recently Used): Keeps track of the least recently used item in the cache and discards it. The LRU eviction algorithm evicts the page from the buffer which has not been accessed for the longest.
+Polacache is a deadly simple and thread-safe map cache. 
+In it's constructor, you set a cleanupInterval, which launchs a goroutine to perform the cleanup loop.
 
-- LFU (Least Frequently Used): Does almost the same as LRU, but tracks the least frequently used. This also implements a Dynamic Aging and a GreedyDual-Size with Frequency cache policy.
+#### Why?
 
-- 2Q Cache: 2Q addresses the above-illustrated issues by introducing parallel buffers and supporting queues. 2Q algorithm works with two buffers. A primary LRU buffer and a secondary FIFO buffer. Instead of considering just recency as a factor, 2Q also considers access frequency while making the decision to ensure the page that is really warm gets a place in the LRU cache. It admits only hot pages to the main buffer and tests every page for a second reference.
+For the fun
 
+#### How? 
+
+```go
+
+package main
+
+import (
+    "time"
+    
+    pc "github.com/nowayhecodes/polacache"
+)
+
+func main() {
+    cache := pc.New(1 * time.Minute)
+
+    exampleItem := pc.Item{
+        Key:   "example",
+        Value: 42,
+    }
+
+    cache.Set(exampleItem, time.Now().Add(1*time.Hour).Unix())
+    cache.Get(exampleItem.Key)
+    cache.Delete(exampleItem.Key)
+
+}
+
+```

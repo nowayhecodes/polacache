@@ -11,9 +11,9 @@ import (
 
 var polacache = New(1 * time.Minute)
 
-var testItem = item{
-	key:   "polatest",
-	value: "testifying polacache",
+var testItem = Item{
+	Key:   "polatest",
+	Value: "testifying polacache",
 }
 
 func TestPolacache_GetSet(t *testing.T) {
@@ -21,9 +21,9 @@ func TestPolacache_GetSet(t *testing.T) {
 
 	polacache.Set(testItem, time.Now().Add(1*time.Hour).Unix())
 
-	it, err := polacache.Get(testItem.key)
+	it, err := polacache.Get(testItem.Key)
 	requires.NoError(err)
-	requires.Equal(testItem.value, it)
+	requires.Equal(testItem.Value, it)
 
 	polacache.stopCleanup()
 }
@@ -31,11 +31,11 @@ func TestPolacache_GetSet(t *testing.T) {
 func TestPolacache_ErrorMessage(t *testing.T) {
 	requires := require.New(t)
 
-	polacache.Delete(testItem.key)
+	polacache.Delete(testItem.Key)
 
-	it, err := polacache.Get(testItem.key)
+	it, err := polacache.Get(testItem.Key)
 	requires.EqualError(err, "key polatest not in cache")
-	requires.Equal(item{}, it)
+	requires.Equal(Item{}, it)
 
 	polacache.stopCleanup()
 }
@@ -46,9 +46,9 @@ func BenchmarkPolacache(b *testing.B) {
 	b.ResetTimer()
 	b.RunParallel(func(p *testing.PB) {
 		for p.Next() {
-			polacache.Set(item{
-				key:   strconv.Itoa(int(rand.Int63())),
-				value: "polacache test",
+			polacache.Set(Item{
+				Key:   strconv.Itoa(int(rand.Int63())),
+				Value: "polacache test",
 			}, time.Now().Add(1*time.Hour).Unix())
 		}
 	})

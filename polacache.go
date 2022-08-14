@@ -6,13 +6,13 @@ import (
 	"time"
 )
 
-type item struct {
-	key   string
-	value interface{}
+type Item struct {
+	Key   string
+	Value interface{}
 }
 
 type cachedItem struct {
-	item      item
+	item      Item
 	expiresAt int64
 }
 
@@ -50,22 +50,24 @@ func New(cleanupInterval time.Duration) *cache {
 }
 
 // Puts an item in the cache with the given expiration timestamp
+//
 // Example:
 //   polacache.Set(item, time.Now().Add(1*time.Hour).Unix())
 //   ...
-func (c *cache) Set(i item, expiresAt int64) {
+func (c *cache) Set(i Item, expiresAt int64) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 
-	c.items[i.key] = cachedItem{
+	c.items[i.Key] = cachedItem{
 		item:      i,
 		expiresAt: expiresAt,
 	}
 }
 
 // Looks up the given key's value in the cache
+//
 // Example:
-//   polacache.Get(item.key)
+//   polacache.Get(item.Key)
 //   ...
 func (c *cache) Get(key string) (interface{}, error) {
 	c.lock.Lock()
@@ -73,15 +75,16 @@ func (c *cache) Get(key string) (interface{}, error) {
 
 	cached, ok := c.items[key]
 	if !ok {
-		return item{}, fmt.Errorf("key %v not in cache", key)
+		return Item{}, fmt.Errorf("key %v not in cache", key)
 	}
 
-	return cached.item.value, nil
+	return cached.item.Value, nil
 }
 
-// Given a key removes the item from the cache
+// Given a key, removes the item from the cache
+//
 // Example:
-//   polacache.Delete(item.key)
+//   polacache.Delete(item.Key)
 //   ...
 func (c *cache) Delete(key string) {
 	c.lock.Lock()
