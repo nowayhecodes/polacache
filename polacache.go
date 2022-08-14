@@ -24,6 +24,15 @@ type cache struct {
 	items map[interface{}]cachedItem
 }
 
+// Returns a new polacache, with the given cleanup interval.
+//
+// Example:
+//   package main
+//
+//   import "github.com/nowayhecodes/polacache"
+//
+//   cache := polacache.New(1 * time.Minute)
+//   ...
 func New(cleanupInterval time.Duration) *cache {
 	c := &cache{
 		items: make(map[interface{}]cachedItem),
@@ -40,6 +49,10 @@ func New(cleanupInterval time.Duration) *cache {
 	return c
 }
 
+// Puts an item in the cache with the given expiration timestamp
+// Example:
+//   polacache.Set(item, time.Now().Add(1*time.Hour).Unix())
+//   ...
 func (c *cache) Set(i item, expiresAt int64) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
@@ -50,6 +63,10 @@ func (c *cache) Set(i item, expiresAt int64) {
 	}
 }
 
+// Looks up the given key's value in the cache
+// Example:
+//   polacache.Get(item.key)
+//   ...
 func (c *cache) Get(key string) (interface{}, error) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
@@ -62,6 +79,10 @@ func (c *cache) Get(key string) (interface{}, error) {
 	return cached.item.value, nil
 }
 
+// Given a key removes the item from the cache
+// Example:
+//   polacache.Delete(item.key)
+//   ...
 func (c *cache) Delete(key string) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
